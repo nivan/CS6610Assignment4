@@ -727,7 +727,7 @@ void myGlutDisplay(	void )
 
 	    glActiveTexture(GL_TEXTURE4);
 	    glBindTexture(GL_TEXTURE_2D, floor_tex->name);
-	    glUniform1i(testFloorTexture,4);
+	    glUniform1i(testFloorTexture,2);
 
 
 	    drawFish(live_fish_drawing_mode);
@@ -915,8 +915,95 @@ GLuint makeProgram(GLuint vertex_shader, GLuint fragment_shader){
 
 void heightToNormal(GLubyte v[512][512][4]){
 
-   
-	
+    int w = 512;//src.get_width();
+    int h = 512;//src.get_height();
+    // if(scale[0] == 0.f || scale[1] == 0.f || scale[2] == 0.f)
+    // {
+    //     float a = float(w)/float(h);
+    //     if(a < 1.f)
+    //     {
+    //         scale[0] = 1.f;
+    //         scale[1] = 1.f/a;
+    //     }
+    //     else
+    //     {
+    //         scale[0] = a;
+    //         scale[1] = 1.f;
+    //     }
+    //     scale[2] = 1.f;
+    // }
+    // dst.set_size(w,h);
+    GLubyte vOutPut[512][512][4];
+    
+    for(int i=1; i < w-1; i++)
+    {
+        for(int j = 1; j < h-1; j++)
+        {
+	    GLfloat dfdi[3];
+	    dfdi[0] = 2.f;
+	    dfdi[1] = 0.f;
+	    dfdi[2] = GLfloat(v[i+1][j][0] - v[i-1][j][0])/255.f;
+//            vec3f dfdi(2.f, 0.f, float(src(i+1, j  ) - src(i-1, j  ))/255.f);
+	    GLfloat dfdj[3];
+	    dfdj[0] = 0.f;
+	    dfdj[1] = 2.f;
+	    dfdj[2] = GLfloat(v[i][j+1][0] - v[i][j-1][0])/255.f;
+//            vec3f dfdj(0.f, 2.f, float(src(i  , j+1) - src(i  , j-1))/255.f);
+	    GLfloat n[3];
+	    crossproduct(dfdi,dfdj,n);
+//            vec3f n = dfdi.cross(dfdj);
+            //modulate(n, scale);
+            normalize(n);
+            vOutPut[i][j][0] = GLubyte((n[0]+1)*127.5);//dst(i,j) = range_compress(n);
+	    vOutPut[i][j][1] = GLubyte((n[1]+1)*127.5);
+	    vOutPut[i][j][2] = GLubyte((n[2]+1)*127.5);
+	    vOutPut[i][j][3] = 1.0;
+        }
+    }
+    // microsoft non-ansi c++ scoping concession
+    {
+        // cheesy boundary cop-out
+        for(int i = 0; i < w; i++)
+        {
+            //dst(i,0)   = dst(i,1);
+	    vOutPut[i][0][0] = vOutPut[i][1][0];
+	    vOutPut[i][0][1] = vOutPut[i][1][1];
+	    vOutPut[i][0][2] = vOutPut[i][1][2];
+	    vOutPut[i][0][3] = vOutPut[i][1][3];
+
+            //dst(i,h-1) = dst(i,h-2);
+	    vOutPut[i][h-1][0] = vOutPut[i][h-2][0];
+	    vOutPut[i][h-1][1] = vOutPut[i][h-2][1];
+	    vOutPut[i][h-1][2] = vOutPut[i][h-2][2];
+	    vOutPut[i][h-1][3] = vOutPut[i][h-2][3];
+
+        }
+        for(int j = 0; j < h; j++)
+        {
+            //dst(0,j)   = dst(1,j);
+	    vOutPut[0][j][0] = vOutPut[1][j][0];
+	    vOutPut[0][j][1] = vOutPut[1][j][1];
+	    vOutPut[0][j][2] = vOutPut[1][j][2];
+	    vOutPut[0][j][3] = vOutPut[1][j][3];
+
+            //dst(w-1,j) = dst(w-2,j);
+	    vOutPut[w-1][j][0] = vOutPut[w-2][j][0];
+	    vOutPut[w-1][j][1] = vOutPut[w-2][j][1];
+	    vOutPut[w-1][j][2] = vOutPut[w-2][j][2];
+	    vOutPut[w-1][j][3] = vOutPut[w-2][j][3];
+        }
+    }
+    
+    for(int i=0; i < w; i++)
+    {
+        for(int j = 0; j < h; j++)
+        {
+	    v[i][j][0] = vOutPut[i][j][0];
+	    v[i][j][1] = vOutPut[i][j][1];
+	    v[i][j][2] = vOutPut[i][j][2];
+	    v[i][j][3] = vOutPut[i][j][3];
+	}
+    }	
 }
 
 void init_textures(){
@@ -1011,7 +1098,9 @@ void init_textures(){
 			}
 		}
 
+		printf("Test before =  %d,%d,%d,%d/n",v[0][0][0],v[0][0][1],v[0][0][2],v[0][0][3]);
 		heightToNormal(v);
+		printf("Test after =  %d,%d,%d,%d/n",v[0][0][0],v[0][0][1],v[0][0][2],v[0][0][3]);
 
 		free(fish_normal_tex->data);
 
