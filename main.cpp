@@ -72,6 +72,7 @@ GLuint phaseToon;
 
 //test program uniforms
 GLuint testFloorTexture;
+GLuint eyePositionTest;
 
 //attribute
 GLuint tangent;
@@ -695,7 +696,8 @@ void myGlutDisplay(	void )
 		//glUseProgram(program);
 	    glUseProgram(testProgram);	   
 
-	    glUniform3f(eyePosition, eye[0],eye[1],eye[2]);	
+	    //glUniform3f(eyePosition, eye[0],eye[1],eye[2]);	
+	    glUniform3f(eyePositionTest, eye[0],eye[1],eye[2]);	
 
 
 
@@ -1041,6 +1043,8 @@ void init( void)
 	glUseProgram(testProgram);
 	testFloorTexture = 
 	    glGetUniformLocation(testProgram, "bumpTex");
+	eyePositionTest = 
+	    glGetUniformLocation(testProgram, "cameraPosition");	
 
 
 	toonVertexShader = makeShader(GL_VERTEX_SHADER, "toonVertexShader.glsl");
