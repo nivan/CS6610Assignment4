@@ -8,14 +8,14 @@ void main(){
    	vec3 NN = normalize(N);
    	vec3 vv = normalize(v);
    	
-	float diffuseLight = max(dot(-NN, vv), 0);
+	float isSilhouette = max(dot(-NN, vv), 0);
 	   	
     vec4 silhouetteColor = vec4(1.0,1.0,1.0,1.0);
-    if(diffuseLight <= 0.2){
+    if(isSilhouette <= 0.15){
     	silhouetteColor = vec4(0.0,0.0,0.0,1.0);
     }
    
-   	vec4 diffuseColor;
+   vec4 diffuseColor;
     if(diffuseTerm <= 0.7){
     	diffuseColor = vec4(0.5,0.0,0.0,1.0);
     }
@@ -24,7 +24,7 @@ void main(){
     }
    	   	   	   	
 	vec4 specularLighting = vec4(0.0,0.0,0.0,1.0);
-	if(specularLight >= 0.9){
+	if(specularLight >= 0.8){
 		specularLighting = vec4(1.0,1.0,1.0,1.0);
 	}	   	   	   	   	
    	   	   	   	

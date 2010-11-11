@@ -33,6 +33,7 @@ GLubyte y[512][512][4];
 GLubyte z[256][256][4];
 GLubyte u[512][512][4];
 GLubyte v[512][512][4];
+GLubyte h[512][512][4];
 
 //Fish Display Lists
 GLuint wireframe_list;
@@ -46,10 +47,15 @@ GLuint program;
 GLuint toonVertexShader;
 GLuint toonFragmentShader;
 GLuint toonProgram;
+GLuint toonTestProgram;
 
 GLuint floorVertexShader;
 GLuint floorFragmentShader;
 GLuint floorProgram;
+
+GLuint testVertexShader;
+GLuint testFragmentShader;
+GLuint testProgram;
 
 //uniforms
 GLuint eyePosition;
@@ -63,6 +69,9 @@ GLuint floorNormalMap;
 GLuint sandTexture;
 GLuint swimToon;
 GLuint phaseToon;
+
+//test program uniforms
+GLuint testFloorTexture;
 
 //attribute
 GLuint tangent;
@@ -683,39 +692,49 @@ void myGlutDisplay(	void )
 		// phong shading
 		// draw some stuff
 		//
-		glUseProgram(program);
-		glUniform3f(eyePosition, eye[0],eye[1],eye[2]);
+		//glUseProgram(program);
+	    glUseProgram(testProgram);	   
 
-		if(live_swim == 1){
-			glUniform1i(swim, 1);
+	    glUniform3f(eyePosition, eye[0],eye[1],eye[2]);	
 
-		}
-		else{
-			glUniform1i(swim, 0);
 
-		}
 
-		glUniform1f(phase, phaseAngle);
 
-		if(live_fish_drawing_mode == 0) glUniform1i(polygonMode, 0);
-		if(live_fish_drawing_mode == 1) glUniform1i(polygonMode, 1);
-		glUniform1i(isFishVertex, 1);
+	    if(live_swim == 1){
+		glUniform1i(swim, 1);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, fish_tex->name);
-		glUniform1i(fishTexture,0);
+	    }
+	    else{
+		glUniform1i(swim, 0);
 
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, fish_normal_tex->name);
-		glUniform1i(fishNormalMap,2);
+	    }
 
-		drawFish(live_fish_drawing_mode);
+	    glUniform1f(phase, phaseAngle);
 
-		glUniform1i(isFishVertex, 0);
+	    if(live_fish_drawing_mode == 0) glUniform1i(polygonMode, 0);
+	    if(live_fish_drawing_mode == 1) glUniform1i(polygonMode, 1);
+	    glUniform1i(isFishVertex, 1);
+
+	    glActiveTexture(GL_TEXTURE0);
+	    glBindTexture(GL_TEXTURE_2D, fish_tex->name);
+	    glUniform1i(fishTexture,0);
+
+	    glActiveTexture(GL_TEXTURE2);
+	    glBindTexture(GL_TEXTURE_2D, fish_normal_tex->name);
+	    glUniform1i(fishNormalMap,2);
+
+	    glActiveTexture(GL_TEXTURE4);
+	    glBindTexture(GL_TEXTURE_2D, floor_tex->name);
+	    glUniform1i(testFloorTexture,4);
+
+
+	    drawFish(live_fish_drawing_mode);
+
+	    glUniform1i(isFishVertex, 0);
 	}
 	else if(live_fish_drawing_mode == 2){
 		//toon shading
-		glUseProgram(toonProgram);
+		glUseProgram(toonTestProgram);
 		glUniform3f(eyePosition, eye[0],eye[1],eye[2]);
 		// draw some stuff
 		//
@@ -892,6 +911,12 @@ GLuint makeProgram(GLuint vertex_shader, GLuint fragment_shader){
 	return program;
 }
 
+void heightToNormal(GLubyte v[512][512][4]){
+
+   
+	
+}
+
 void init_textures(){
 
 	//read files
@@ -899,6 +924,7 @@ void init_textures(){
 	sand_tex = load_texture("sand.rgb");
 	fish_tex = load_texture("fishColor.rgb");
 	fish_normal_tex = load_texture("fish_bump_map.rgb");
+
 
 	printf("name = %d\n", floor_tex->name);
 
@@ -983,10 +1009,14 @@ void init_textures(){
 			}
 		}
 
+		heightToNormal(v);
+
 		free(fish_normal_tex->data);
 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fish_normal_tex->width,
 				fish_normal_tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,v);
+
+
 }
 
 void init( void)
@@ -1005,9 +1035,19 @@ void init( void)
 
 	init_textures();
 
+	testVertexShader = makeShader(GL_VERTEX_SHADER, "testVertexShader.glsl");
+	testFragmentShader = makeShader(GL_FRAGMENT_SHADER, "testFragmentShader.glsl");
+	testProgram = makeProgram(testVertexShader, testFragmentShader);
+	glUseProgram(testProgram);
+	testFloorTexture = 
+	    glGetUniformLocation(testProgram, "bumpTex");
+
+
 	toonVertexShader = makeShader(GL_VERTEX_SHADER, "toonVertexShader.glsl");
 	toonFragmentShader = makeShader(GL_FRAGMENT_SHADER, "toonFragmentShader.glsl");
 	toonProgram = makeProgram(toonVertexShader, toonFragmentShader);
+	toonTestProgram = 
+	    makeProgram(testVertexShader, toonFragmentShader);
 	glUseProgram(toonProgram);
 	phaseToon = glGetUniformLocation(toonProgram, "phase");
 	swimToon = glGetUniformLocation(toonProgram, "swim");

@@ -32,7 +32,7 @@ void main()
 	float 	height;		// height offset for parallax mapping
 	vec3 	bumpNorm;	// normal to the pixel ( read from the normal map )
 	vec4 	decalCol;	// decal color ( read from color map )
-	vec4 	diffuse;	// Light diffuse coefficent
+		vec4 	diffuse;	// Light diffuse coefficent
 	float 	nDotL;		// Dot product between the light direction in tangent space and the pixel normal
 	float 	spec;		// Specular factor	
 	vec3 	finalCol;	// Final fragment color after the computations	 

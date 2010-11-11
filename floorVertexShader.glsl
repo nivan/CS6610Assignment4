@@ -4,8 +4,6 @@ varying float LightDistance;
 varying vec3 EyeDir;
 varying vec3 HalfVector;
 
-
-
 attribute vec3 Tangent; 
 
 vec3 TransformToTangentSpace( in vec3 t , in vec3 b , in vec3 n , in vec3 vector ){

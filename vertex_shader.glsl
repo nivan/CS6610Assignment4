@@ -107,7 +107,7 @@ void main()
 			binormal.y     = dot(line2Jacob,tempBinormal);
 			binormal = normalize(binormal);
 						
-			tempNormal = normalize(cross(tangent,binormal));						
+			tempNormal = normalize(cross(binormal,tangent));						
 		}
 		else if(temp.z == 10){
 			temp.x = 0;
