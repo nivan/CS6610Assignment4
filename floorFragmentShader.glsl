@@ -44,9 +44,7 @@ void main()
 	
 	
 	uvCoord = TexCoords;
-	
-	
-	
+		
 	bumpNorm = UnpackNormal( texture2D( Texture_Normal, uvCoord ) );
 	decalCol = texture2D( sandTexture, uvCoord );
 	

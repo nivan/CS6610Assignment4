@@ -48,4 +48,5 @@ void main(){
 	EyeDir = TransformToTangentSpace( t , b, n , eyeDirection );
 
 	TexCoords = gl_MultiTexCoord0.xy;
+	
 }

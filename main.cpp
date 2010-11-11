@@ -7,12 +7,15 @@
 
 #include <math.h> 
 #define PI 3.14159265
-
+#define NUM_TRANS_SECTIONS 70
+#define NUM_LAT_QUADS 20
 using namespace std;
 
 int	main_window; 
 
 GLUquadric* light;
+GLUquadric* testCylinder;
+
 
 // the camera info   
 float eye[3]; 
@@ -28,6 +31,8 @@ float zDirTransl = 0.0;
 //GLuint floor_normal_map;
 GLubyte y[512][512][4];
 GLubyte z[256][256][4];
+GLubyte u[512][512][4];
+GLubyte v[512][512][4];
 
 //Fish Display Lists
 GLuint wireframe_list;
@@ -47,15 +52,22 @@ GLuint floorFragmentShader;
 GLuint floorProgram;
 
 //uniforms
+GLuint eyePosition;
+GLuint fishNormalMap;
 GLuint isFishVertex;
+GLuint fishTexture;
 GLuint polygonMode;
 GLuint swim;
 GLuint phase;
 GLuint floorNormalMap;
 GLuint sandTexture;
+GLuint swimToon;
+GLuint phaseToon;
 
 //attribute
 GLuint tangent;
+GLuint binormalFish;
+GLuint tangentFish;
 
 // pointers for all of the glui controls 
 GLUI *glui; 
@@ -74,6 +86,10 @@ GLUI_Checkbox *draw_object_check;
 // This  checkbox utilizes the callback 
 GLUI_Checkbox *use_depth_buffer; 
 
+int live_draw_left_wall;
+int live_draw_right_wall;
+int live_draw_front_wall;
+int live_draw_back_wall;
 
 // the user id's that we can use to identify which control 
 // caused the callback to be called 
@@ -84,7 +100,7 @@ GLUI_Checkbox *use_depth_buffer;
 // walking action variables 
 // 
 GLfloat step = 0; 
-GLfloat live_anim_speed = 3; 
+GLfloat live_anim_speed = 5;
 
 // live variables 
 // each of these are associated with a control in the interface. 
@@ -110,6 +126,8 @@ typedef struct texture{
 
 texture* floor_tex;
 texture* sand_tex;
+texture* fish_tex;
+texture* fish_normal_tex;
 
 texture* texture_new(int width, int height){
 	texture* new_texture = (texture*)malloc(sizeof(texture));
@@ -194,7 +212,7 @@ void myGlutIdle(void)
 		glutSetWindow(main_window); 
 
 	if(live_swim) phaseAngle += (0.015*live_anim_speed);
-	if(phaseAngle >= 2*PI) phaseAngle = 0;
+	//if(phaseAngle >= (2*PI)) phaseAngle = 0;
 
 	// if you have moving objects, you can do that here 
 
@@ -381,11 +399,11 @@ void configureCamera(){
 	glLoadIdentity();
 	gluLookAt(eye[0], eye[1], eye[2], lookat[0], lookat[1], lookat[2],  0,1,0);
 
-	glActiveTexture(GL_TEXTURE1);
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	gluPerspective(90, float(tw)/th, 0.01, 500);
-	glMatrixMode(GL_MODELVIEW);
+//	glActiveTexture(GL_TEXTURE1);
+//	glMatrixMode(GL_TEXTURE);
+//	glLoadIdentity();
+//	gluPerspective(90, float(tw)/th, 0.01, 500);
+//	glMatrixMode(GL_MODELVIEW);
 
 }
 
@@ -406,15 +424,15 @@ void drawFloor(){
 		glVertexAttrib3f(tangent,1,0,0);
 		glBegin(GL_TRIANGLE_FAN);
 		glColor3f(0.4f, 0.4f, 0.4f);    // note: color is state and only needs to be set once
-		glNormal3f(0,5,0);
+		glNormal3f(0,1,0);
 		glTexCoord2f(0,0);
-		glVertex3f(-30, -5, -30);
-		glTexCoord2f(5,0);
-		glVertex3f( 30, -5, -30);
-		glTexCoord2f(5,5);
-		glVertex3f( 30, -5,  30);
-		glTexCoord2f(0,5);
-		glVertex3f(-30, -5,  30);
+		glVertex3f(-100, -5, -100);
+		glTexCoord2f(20,0);
+		glVertex3f( 100, -5, -100);
+		glTexCoord2f(20,20);
+		glVertex3f( 100, -5,  100);
+		glTexCoord2f(0,20);
+		glVertex3f(-100, -5,  100);
 		glEnd();
 	}
 	//glDisable(GL_TEXTURE_2D);
@@ -498,8 +516,18 @@ void drawFish(int mode){
 
 	if(mode == 0 || mode == 2){
 		//		//filled frame
-		glCallList(filled_list);
+		//glCallList(filled_list);
 		//drawCylinder1(20,1,10,40);
+//			glMatrixMode(GL_MODELVIEW);
+//			glPushMatrix();
+//			glTranslatef(5,0,0);
+
+		//	glBindTexture(GL_TEXTURE_2D, fish_tex->name);
+	//		glEnable(GL_TEXTURE_2D);
+
+			gluCylinder(testCylinder, 1,1,10,50,50);
+//			glDisable(GL_TEXTURE_2D);
+//			glPopMatrix();
 	}
 	else if(mode == 1){
 		//		//wireframe
@@ -553,6 +581,86 @@ void drawLight(){
 
 }
 
+
+void drawLeftWall(){
+	if (live_draw_left_wall)
+	{
+
+		//glEnable(GL_TEXTURE_2D);
+		//glNormal3f(-1.0, 0.0, 0.0);
+		//glBindTexture(GL_TEXTURE_2D, wall_tex->name);
+		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glBegin(GL_TRIANGLE_FAN);
+		glNormal3f(1.0,0.0,0.0);
+		/*glTexCoord2f(0.0,4.0);*/  glVertex3f(-10, 10, -10);
+		/*glTexCoord2f(4.0,4.0);*/  glVertex3f(-10, 10,  10);
+		/*glTexCoord2f(4.0,0.0);*/  glVertex3f(-10, 0,  10);
+		/*glTexCoord2f(0.0,0.0);*/  glVertex3f(-10, 0, -10);
+		glEnd();
+	}
+
+}
+
+void drawRightWall(){
+	//draw right wall
+	if(live_draw_right_wall)
+	{
+		//glNormal3f(1.0, 0.0, 0.0);
+		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+		glBegin(GL_TRIANGLE_FAN);
+		glNormal3f(-1.0,0.0,0.0);
+		/*glTexCoord2f(0.0,0.0);*/ glVertex3f(10, 0, -10);
+		/*glTexCoord2f(4.0,0.0);*/ glVertex3f(10, 0,  10);
+		/*glTexCoord2f(4.0,4.0);*/ glVertex3f(10, 10,  10);
+		/*glTexCoord2f(0.0,4.0);*/ glVertex3f(10, 10, -10);
+		glEnd();
+	}
+}
+
+void drawFrontWall(){
+	//draw front wall
+	if(live_draw_front_wall)
+	{
+		glNormal3f(0.0, 0.0, -1.0);
+		//		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+		glBegin(GL_TRIANGLE_FAN);
+		/*glTexCoord2f(0.0,4.0);*/ glVertex3f(-10, 10, 10);
+		/*glTexCoord2f(4.0,4.0);*/ glVertex3f(10, 10,  10);
+		/*glTexCoord2f(4.0,0.0);*/ glVertex3f(10, 0,  10);
+		/*glTexCoord2f(0.0,0.0);*/ glVertex3f(-10, 0, 10);
+		glEnd();
+	}
+}
+
+void drawBackWall(){
+	//draw back wall
+	if(live_draw_back_wall)
+	{
+		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+		glBegin(GL_TRIANGLE_FAN);
+		glNormal3f(0.0, 0.0, 1.0);
+		/*glTexCoord2f(0.0,0.0);*/ glVertex3f(-10, 0, -10);
+		/*glTexCoord2f(4.0,0.0);*/ glVertex3f(10, 0,  -10);
+		/*glTexCoord2f(4.0,4.0);*/ glVertex3f(10, 10,  -10);
+		/*glTexCoord2f(0.0,4.0);*/ glVertex3f(-10, 10, -10);
+		glEnd();
+	}
+}
+
+void drawWalls(){
+	//draw left wall
+
+	drawLeftWall();
+	drawRightWall();
+	drawFrontWall();
+	drawBackWall();
+
+}
+
+
 // draw the scene 
 void myGlutDisplay(	void ) 
 { 
@@ -576,12 +684,16 @@ void myGlutDisplay(	void )
 		// draw some stuff
 		//
 		glUseProgram(program);
+		glUniform3f(eyePosition, eye[0],eye[1],eye[2]);
 
-
-		if(live_swim == 1)
+		if(live_swim == 1){
 			glUniform1i(swim, 1);
-		else
+
+		}
+		else{
 			glUniform1i(swim, 0);
+
+		}
 
 		glUniform1f(phase, phaseAngle);
 
@@ -589,51 +701,34 @@ void myGlutDisplay(	void )
 		if(live_fish_drawing_mode == 1) glUniform1i(polygonMode, 1);
 		glUniform1i(isFishVertex, 1);
 
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, fish_tex->name);
+		glUniform1i(fishTexture,0);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, fish_normal_tex->name);
+		glUniform1i(fishNormalMap,2);
+
 		drawFish(live_fish_drawing_mode);
 
 		glUniform1i(isFishVertex, 0);
-
-		glUseProgram(0);
-		glDisable(GL_LIGHTING);
-		drawLight();
-		glEnable(GL_LIGHTING);
-		//	if (live_draw_object)
-		//	{
-		//		glColor3f(0, 1, 1);
-		//
-		//		glPushMatrix();
-		//		glTranslatef(live_object_xz_trans[0], live_object_y_trans, -live_object_xz_trans[1]);
-		//		glMultMatrixf(live_object_rotation);
-		//
-		//		switch(live_object_type)
-		//		{
-		//		case 0:
-		//			glutSolidCube(2);
-		//			break;
-		//		case 1:
-		//			glutSolidSphere(2, 30, 30);
-		//			break;
-		//		case 2:
-		//			glutSolidTorus(0.5, 2, 30, 30);
-		//			break;
-		//		}
-		//
-		//		glPopMatrix();
-		//	}
 	}
 	else if(live_fish_drawing_mode == 2){
 		//toon shading
 		glUseProgram(toonProgram);
+		glUniform3f(eyePosition, eye[0],eye[1],eye[2]);
 		// draw some stuff
 		//
 		//	glUniform1i(isFishVertex, 0);
 
 		//		glUniform1i(isFishVertex, 0);
-		if(live_swim == 1)
-			glUniform1i(swim, 1);
-		else
-			glUniform1i(swim, 0);
-
+		if(live_swim == 1){
+			glUniform1i(swimToon, 1);
+		}
+		else{
+			glUniform1i(swimToon, 0);
+		}
+		glUniform1f(phaseToon, phaseAngle);
 		//			glUniform1f(phase, phaseAngle);
 
 		if(live_fish_drawing_mode == 0) glUniform1i(polygonMode, 0);
@@ -644,13 +739,28 @@ void myGlutDisplay(	void )
 
 		//glUniform1i(isFishVertex, 0);
 
-		glUseProgram(0);
-		glDisable(GL_LIGHTING);
-		drawLight();
-		glEnable(GL_LIGHTING);
+
+
 
 	}
 	glPopMatrix();
+
+	glUseProgram(0);
+	glDisable(GL_LIGHTING);
+	drawLight();
+
+//	glMatrixMode(GL_MODELVIEW);
+//	glPushMatrix();
+//	glTranslatef(5,0,0);
+//
+//	glBindTexture(GL_TEXTURE_2D, fish_tex->name);
+//	glEnable(GL_TEXTURE_2D);
+//
+//	gluCylinder(testCylinder, 1,1,10,50,50);
+//	glDisable(GL_TEXTURE_2D);
+//	glPopMatrix();
+
+	glEnable(GL_LIGHTING);
 
 	glutSwapBuffers();  
 } 
@@ -721,19 +831,19 @@ GLchar* readFile(char* fileName, GLint *length){
 }
 
 static void show_info_log(
-    GLuint object,
-    PFNGLGETSHADERIVPROC glGet__iv,
-    PFNGLGETSHADERINFOLOGPROC glGet__InfoLog
+		GLuint object,
+		PFNGLGETSHADERIVPROC glGet__iv,
+		PFNGLGETSHADERINFOLOGPROC glGet__InfoLog
 )
 {
-    GLint log_length;
-    char *log;
+	GLint log_length;
+	char *log;
 
-    glGet__iv(object, GL_INFO_LOG_LENGTH, &log_length);
-    log = (char*)malloc(log_length);
-    glGet__InfoLog(object, log_length, NULL, log);
-    printf("%s", log);
-    free(log);
+	glGet__iv(object, GL_INFO_LOG_LENGTH, &log_length);
+	log = (char*)malloc(log_length);
+	glGet__InfoLog(object, log_length, NULL, log);
+	printf("%s", log);
+	free(log);
 }
 
 GLuint makeShader(GLenum type, char *fileName){
@@ -787,6 +897,8 @@ void init_textures(){
 	//read files
 	floor_tex = load_texture("floor_normal_map.rgb");
 	sand_tex = load_texture("sand.rgb");
+	fish_tex = load_texture("fishColor.rgb");
+	fish_normal_tex = load_texture("fish_bump_map.rgb");
 
 	printf("name = %d\n", floor_tex->name);
 
@@ -813,25 +925,68 @@ void init_textures(){
 
 
 	//sand texture
-		glBindTexture(GL_TEXTURE_2D, sand_tex->name);
+	glBindTexture(GL_TEXTURE_2D, sand_tex->name);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	for(int i = 0 ; i < 256 ; i++){
+		for(int j = 0 ; j < 256 ; j++){
+			z[i][j][0] = sand_tex->data[i][j][0];
+			z[i][j][1] = sand_tex->data[i][j][1];
+			z[i][j][2] = sand_tex->data[i][j][2];
+			z[i][j][3] = sand_tex->data[i][j][3];
+		}
+	}
+
+	free(sand_tex->data);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sand_tex->width,
+			sand_tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,z);
+
+
+	//fish texture
+	glBindTexture(GL_TEXTURE_2D, fish_tex->name);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	for(int i = 0 ; i < 512 ; i++){
+		for(int j = 0 ; j < 512 ; j++){
+			u[i][j][0] = fish_tex->data[i][j][0];
+			u[i][j][1] = fish_tex->data[i][j][1];
+			u[i][j][2] = fish_tex->data[i][j][2];
+			u[i][j][3] = fish_tex->data[i][j][3];
+		}
+	}
+
+	free(fish_tex->data);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fish_tex->width,
+			fish_tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,u);
+
+	//fish normalMap
+		glBindTexture(GL_TEXTURE_2D, fish_normal_tex->name);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-		for(int i = 0 ; i < 256 ; i++){
-			for(int j = 0 ; j < 256 ; j++){
-				z[i][j][0] = sand_tex->data[i][j][0];
-				z[i][j][1] = sand_tex->data[i][j][1];
-				z[i][j][2] = sand_tex->data[i][j][2];
-				z[i][j][3] = sand_tex->data[i][j][3];
+		for(int i = 0 ; i < 512 ; i++){
+			for(int j = 0 ; j < 512 ; j++){
+				v[i][j][0] = fish_normal_tex->data[i][j][0];
+				v[i][j][1] = fish_normal_tex->data[i][j][1];
+				v[i][j][2] = fish_normal_tex->data[i][j][2];
+				v[i][j][3] = fish_normal_tex->data[i][j][3];
 			}
 		}
 
-		free(sand_tex->data);
+		free(fish_normal_tex->data);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sand_tex->width,
-				sand_tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,z);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fish_normal_tex->width,
+				fish_normal_tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,v);
 }
 
 void init( void)
@@ -853,6 +1008,11 @@ void init( void)
 	toonVertexShader = makeShader(GL_VERTEX_SHADER, "toonVertexShader.glsl");
 	toonFragmentShader = makeShader(GL_FRAGMENT_SHADER, "toonFragmentShader.glsl");
 	toonProgram = makeProgram(toonVertexShader, toonFragmentShader);
+	glUseProgram(toonProgram);
+	phaseToon = glGetUniformLocation(toonProgram, "phase");
+	swimToon = glGetUniformLocation(toonProgram, "swim");
+
+
 
 	floorVertexShader = makeShader(GL_VERTEX_SHADER, "floorVertexShader.glsl");
 	floorFragmentShader = makeShader(GL_FRAGMENT_SHADER, "floorFragmentShader.glsl");
@@ -879,6 +1039,9 @@ void init( void)
 	swim = glGetUniformLocation(program,"swim");
 	phase = glGetUniformLocation(program,"phase");
 	polygonMode = glGetUniformLocation(program,"polygonMode");
+	fishTexture = glGetUniformLocation(program,"fishTexture");
+	eyePosition = glGetUniformLocation(program,"eyePosition");
+	fishNormalMap = glGetUniformLocation(program,"fishNormalMap");
 
 	filled_list = glGenLists(1);
 	wireframe_list = glGenLists(1);
@@ -892,22 +1055,25 @@ void init( void)
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	for(int j = 0 ; j < 50 ; j++){
+	for(int j = 0 ; j < NUM_TRANS_SECTIONS ; j++){
 		glBegin(GL_QUAD_STRIP);
-		for(int i = 0 ; i < 20 ; i++){
-			GLfloat x0 = cos(((GLfloat)2*i*PI)/((GLfloat)20));
-			GLfloat y0 = sin(((GLfloat)2*i*PI)/((GLfloat)20));
-			GLfloat z0 = (j+1)*(10/((GLfloat) 50));
+		for(int i = 0 ; i < NUM_LAT_QUADS ; i++){
+			GLfloat x0 = cos(((GLfloat)2*i*PI)/((GLfloat)NUM_LAT_QUADS));
+			GLfloat y0 = sin(((GLfloat)2*i*PI)/((GLfloat)NUM_LAT_QUADS));
+			GLfloat z0 = (j+1)*(10/((GLfloat) NUM_TRANS_SECTIONS));
 
 			GLfloat x1 = x0;
 			GLfloat y1 = y0;
-			GLfloat z1 = j*(10/((GLfloat) 50));
+			GLfloat z1 = j*(10/((GLfloat) NUM_TRANS_SECTIONS));
 
 			glVertexAttrib3f(tangent,-y0,x0,0);
+
 			glNormal3f(x0,y0,0);
+			glTexCoord2f(((GLfloat) i)/NUM_LAT_QUADS,z0/10.0);
 			glVertex3f(x0,y0,z0);
 
 			glNormal3f(x1,y1,0);
+			glTexCoord2f(((GLfloat) i)/NUM_LAT_QUADS,z1/10.0);
 			glVertexAttrib3f(tangent,-y1,x1,0);
 			glVertex3f(x1,y1,z1);
 
@@ -915,11 +1081,13 @@ void init( void)
 
 		glNormal3f(1,0,0);
 		glVertexAttrib3f(tangent,0,1,0);
-		glVertex3f(1,0,(j+1)*(10/((GLfloat) 50)));
+		glTexCoord2f(0.0,(j+1)*(1.0/((GLfloat) NUM_TRANS_SECTIONS)));
+		glVertex3f(1,0,(j+1)*(10/((GLfloat) NUM_TRANS_SECTIONS)));
 
 		glNormal3f(1,0,0);
 		glVertexAttrib3f(tangent,0,1,0);
-		glVertex3f(1,0,j*(10/((GLfloat) 50)));
+		glTexCoord2f(0.0,(j)*(1.0/((GLfloat) NUM_TRANS_SECTIONS)));
+		glVertex3f(1,0,j*(10/((GLfloat) NUM_TRANS_SECTIONS)));
 		glEnd();
 	}
 	glPopAttrib();
@@ -934,16 +1102,16 @@ void init( void)
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	for(int j = 0 ; j < 50 ; j++){
+	for(int j = 0 ; j < NUM_TRANS_SECTIONS ; j++){
 		glBegin(GL_QUAD_STRIP);
-		for(int i = 0 ; i < 20 ; i++){
-			GLfloat x0 = cos(((GLfloat)2*i*PI)/((GLfloat)20));
-			GLfloat y0 = sin(((GLfloat)2*i*PI)/((GLfloat)20));
-			GLfloat z0 = (j+1)*(10/((GLfloat) 50));
+		for(int i = 0 ; i < NUM_LAT_QUADS ; i++){
+			GLfloat x0 = cos(((GLfloat)2*i*PI)/((GLfloat)NUM_LAT_QUADS));
+			GLfloat y0 = sin(((GLfloat)2*i*PI)/((GLfloat)NUM_LAT_QUADS));
+			GLfloat z0 = (j+1)*(10/((GLfloat) NUM_TRANS_SECTIONS));
 
 			GLfloat x1 = x0;
 			GLfloat y1 = y0;
-			GLfloat z1 = j*(10/((GLfloat) 50));
+			GLfloat z1 = j*(10/((GLfloat) NUM_TRANS_SECTIONS));
 
 			glNormal3f(x0,y0,0);
 			glVertex3f(x0,y0,z0);
@@ -952,8 +1120,8 @@ void init( void)
 
 		}
 
-		glVertex3f(1,0,(j+1)*(10/((GLfloat) 50)));
-		glVertex3f(1,0,j*(10/((GLfloat) 50)));
+		glVertex3f(1,0,(j+1)*(10/((GLfloat) NUM_TRANS_SECTIONS)));
+		glVertex3f(1,0,j*(10/((GLfloat) NUM_TRANS_SECTIONS)));
 		glEnd();
 	}
 	glPopAttrib();
@@ -1087,12 +1255,15 @@ int main(int argc,	char* argv[])
 	// initialize the camera 
 	eye[0] = 0; 
 	eye[1] = 4; 
-	eye[2] = 10; GLuint program;
+	eye[2] = 10; //GLuint program;
 	lookat[0] = 0; 
 	lookat[1] = 0; 
 	lookat[2] = 0; 
 
 	light = gluNewQuadric();
+	testCylinder = gluNewQuadric();
+	gluQuadricOrientation(testCylinder,GLU_OUTSIDE);
+	gluQuadricTexture(testCylinder, GL_TRUE);
 
 	// initialize gl 
 	glEnable(GL_DEPTH_TEST); 
