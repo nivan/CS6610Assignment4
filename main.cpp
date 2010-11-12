@@ -442,13 +442,12 @@ void drawFloor(){
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, sand_tex->name);
 	glUniform1i(sandTexture,1);
-
-	//glEnable(GL_TEXTURE_2D);
+	glEnable(GL_COLOR_MATERIAL);
 	if (live_draw_floor)
 	{
 		glVertexAttrib3f(tangent,1,0,0);
 		glBegin(GL_TRIANGLE_FAN);
-		glColor3f(0.4f, 0.4f, 0.4f);    // note: color is state and only needs to be set once
+		glColor3f(1,0f, 1.0f, 1.0f);
 		glNormal3f(0,1,0);
 		glTexCoord2f(0,0);
 		glVertex3f(-100, -5, -100);
@@ -461,7 +460,7 @@ void drawFloor(){
 		glEnd();
 	}
 	//glDisable(GL_TEXTURE_2D);
-	//glDisable(GL_COLOR_MATERIAL);
+	glDisable(GL_COLOR_MATERIAL);
 }
 
 void drawCylinder(GLint numQuads, GLfloat radius, GLfloat height){
