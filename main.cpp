@@ -73,6 +73,7 @@ GLuint phaseToon;
 //test program uniforms
 GLuint testFloorTexture;
 GLuint eyePositionTest;
+GLuint testFishTexture;
 
 //attribute
 GLuint tangent;
@@ -421,7 +422,7 @@ void drawFloor(){
 	glPushAttrib(GL_LIGHTING_BIT | GL_POLYGON_BIT);
 	//glEnable(GL_COLOR_MATERIAL);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, floor_tex->name);
+	glBindTexture(GL_TEXTURE_2D, floor_tex->name); 
 	glUniform1i(floorNormalMap,0);
 
 	glActiveTexture(GL_TEXTURE1);
@@ -534,7 +535,7 @@ void drawFish(int mode){
 
 		//	glBindTexture(GL_TEXTURE_2D, fish_tex->name);
 	//		glEnable(GL_TEXTURE_2D);
-
+	    glColor4f(1.0,1.0,1.0,1.0);
 			gluCylinder(testCylinder, 1,1,10,50,50);
 //			glDisable(GL_TEXTURE_2D);
 //			glPopMatrix();
@@ -554,7 +555,11 @@ void configureLight(){
 	light_position[2] = -light_position_XZ[1];
 	light_position[1] = light_position_Y;
 	light_position[3] = 1.0;
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	glPopMatrix();
 
 	GLfloat white[4];
 	white[0] = 1.0;//*light_intensity;
@@ -728,6 +733,7 @@ void myGlutDisplay(	void )
 	    glActiveTexture(GL_TEXTURE4);
 	    glBindTexture(GL_TEXTURE_2D, floor_tex->name);
 	    glUniform1i(testFloorTexture,2);
+	    glUniform1i(testFishTexture,0);
 
 
 	    drawFish(live_fish_drawing_mode);
@@ -940,14 +946,25 @@ void heightToNormal(GLubyte v[512][512][4]){
         for(int j = 1; j < h-1; j++)
         {
 	    GLfloat dfdi[3];
-	    dfdi[0] = 2.f;
+	    //dfdi[0] = 2.f;
+	    //dfdi[1] = 0.f;
+	    //dfdi[2] = GLfloat((v[i+1][j][0] - v[i-1][j][0]))/255.f;
+
+	    dfdi[0] = 1.f;
 	    dfdi[1] = 0.f;
-	    dfdi[2] = GLfloat(v[i+1][j][0] - v[i-1][j][0])/255.f;
+	    dfdi[2] = GLfloat(3.0*(v[i+1][j][0] - v[i][j][0]))/255.f;
+
 //            vec3f dfdi(2.f, 0.f, float(src(i+1, j  ) - src(i-1, j  ))/255.f);
 	    GLfloat dfdj[3];
+	    //dfdj[0] = 0.f;
+	    //dfdj[1] = 2.f;
+	    //dfdj[2] = GLfloat((v[i][j+1][0] - v[i][j-1][0]))/255.f;
+
 	    dfdj[0] = 0.f;
-	    dfdj[1] = 2.f;
-	    dfdj[2] = GLfloat(v[i][j+1][0] - v[i][j-1][0])/255.f;
+	    dfdj[1] = 1.f;
+	    dfdj[2] = GLfloat((v[i][j+1][0] - v[i][j][0]))/255.f;
+
+
 //            vec3f dfdj(0.f, 2.f, float(src(i  , j+1) - src(i  , j-1))/255.f);
 	    GLfloat n[3];
 	    crossproduct(dfdi,dfdj,n);
@@ -1132,6 +1149,8 @@ void init( void)
 	glUseProgram(testProgram);
 	testFloorTexture = 
 	    glGetUniformLocation(testProgram, "bumpTex");
+	testFishTexture = 
+	    glGetUniformLocation(testProgram, "fishTex");
 	eyePositionTest = 
 	    glGetUniformLocation(testProgram, "cameraPosition");	
 

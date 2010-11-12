@@ -1,4 +1,4 @@
-uniform sampler2D Texture_Normal;
+uniform sampler2D floorNormalMap;
 uniform sampler2D sandTexture;
 
 varying vec3 lightDirection; 
@@ -45,7 +45,7 @@ void main()
 	
 	uvCoord = TexCoords;
 		
-	bumpNorm = UnpackNormal( texture2D( Texture_Normal, uvCoord ) );
+	bumpNorm = UnpackNormal( texture2D( floorNormalMap, uvCoord ) );
 	decalCol = texture2D( sandTexture, uvCoord );
 	
 	// compute distance between the surface and the light position
