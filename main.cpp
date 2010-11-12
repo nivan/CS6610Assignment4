@@ -74,6 +74,10 @@ GLuint phaseToon;
 GLuint testFloorTexture;
 GLuint eyePositionTest;
 GLuint testFishTexture;
+GLuint testXTrans;
+GLuint testZTrans;
+GLuint testPhase;
+GLuint testSwim;
 
 //attribute
 GLuint tangent;
@@ -223,6 +227,7 @@ void myGlutIdle(void)
 		glutSetWindow(main_window); 
 
 	if(live_swim) phaseAngle += (0.015*live_anim_speed);
+	else          phaseAngle = 0.0;
 	//if(phaseAngle >= (2*PI)) phaseAngle = 0;
 
 	// if you have moving objects, you can do that here 
@@ -693,8 +698,8 @@ void myGlutDisplay(	void )
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glTranslatef(xDirTransl,0,zDirTransl);
-	if(live_fish_drawing_mode <= 1){
+	//glTranslatef(xDirTransl,0,zDirTransl);
+	if(live_fish_drawing_mode == 0){
 		// phong shading
 		// draw some stuff
 		//
@@ -703,20 +708,22 @@ void myGlutDisplay(	void )
 
 	    //glUniform3f(eyePosition, eye[0],eye[1],eye[2]);	
 	    glUniform3f(eyePositionTest, eye[0],eye[1],eye[2]);	
-
+	    glUniform1f(testXTrans, xDirTransl);	
+	    glUniform1f(testZTrans, zDirTransl);
 
 
 
 	    if(live_swim == 1){
-		glUniform1i(swim, 1);
-
+		//	glUniform1i(swim, 1);
+		glUniform1i(testSwim, 1);		
 	    }
 	    else{
-		glUniform1i(swim, 0);
-
+		//glUniform1i(swim, 0);
+		glUniform1i(testSwim, 0);		
 	    }
 
 	    glUniform1f(phase, phaseAngle);
+	    glUniform1f(testPhase, phaseAngle);
 
 	    if(live_fish_drawing_mode == 0) glUniform1i(polygonMode, 0);
 	    if(live_fish_drawing_mode == 1) glUniform1i(polygonMode, 1);
@@ -742,7 +749,7 @@ void myGlutDisplay(	void )
 	}
 	else if(live_fish_drawing_mode == 2){
 		//toon shading
-		glUseProgram(toonTestProgram);
+		glUseProgram(toonProgram);
 		glUniform3f(eyePosition, eye[0],eye[1],eye[2]);
 		// draw some stuff
 		//
@@ -1152,7 +1159,14 @@ void init( void)
 	testFishTexture = 
 	    glGetUniformLocation(testProgram, "fishTex");
 	eyePositionTest = 
-	    glGetUniformLocation(testProgram, "cameraPosition");	
+	    glGetUniformLocation(testProgram, "cameraPosition");	testXTrans = 
+	    glGetUniformLocation(testProgram, "xTrans");
+	testZTrans = 
+	    glGetUniformLocation(testProgram, "zTrans");	
+	testPhase = 
+	    glGetUniformLocation(testProgram, "phaseAngle");	
+	testSwim = 
+	    glGetUniformLocation(testProgram, "testSwim");	
 
 
 	toonVertexShader = makeShader(GL_VERTEX_SHADER, "toonVertexShader.glsl");
