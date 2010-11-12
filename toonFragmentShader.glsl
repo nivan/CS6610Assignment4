@@ -8,10 +8,10 @@ void main(){
    	vec3 NN = normalize(N);
    	vec3 vv = normalize(v);
    	
-	float isSilhouette = max(dot(-NN, vv), 0);
+	float isSilhouette = max(dot(NN, vv), 0);
 	   	
     vec4 silhouetteColor = vec4(1.0,1.0,1.0,1.0);
-    if(isSilhouette <= 0.15){
+    if(isSilhouette <= 0.1){
     	silhouetteColor = vec4(0.0,0.0,0.0,1.0);
     }
    

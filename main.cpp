@@ -70,6 +70,15 @@ GLuint sandTexture;
 GLuint swimToon;
 GLuint phaseToon;
 
+//wire uniforms
+GLuint wireXTrans;
+GLuint wireZTrans;
+
+//toon uniforms
+GLuint toonCameraPosition;
+GLuint toonXTrans;
+GLuint toonZTrans;
+
 //test program uniforms
 GLuint testFloorTexture;
 GLuint eyePositionTest;
@@ -531,6 +540,7 @@ void drawFish(int mode){
 	//glColor4f(0.396, 0.74151, 0.69102, 0.8);
 
 	if(mode == 0 || mode == 2){
+	    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		//		//filled frame
 		//glCallList(filled_list);
 		//drawCylinder1(20,1,10,40);
@@ -541,15 +551,16 @@ void drawFish(int mode){
 		//	glBindTexture(GL_TEXTURE_2D, fish_tex->name);
 	//		glEnable(GL_TEXTURE_2D);
 	    //glColor4f(1.0,1.0,1.0,1.0);
-			gluCylinder(testCylinder, 1,1,10,50,50);
+
 //			glDisable(GL_TEXTURE_2D);
 //			glPopMatrix();
 	}
 	else if(mode == 1){
 		//		//wireframe
-		glCallList(wireframe_list);
+	    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	    glColor3f(1.0,1.0,1.0);
 	}
-
+	    gluCylinder(testCylinder, 1,1,10,50,50);
 	//	glPopAttrib();
 }
 
@@ -597,89 +608,7 @@ void drawLight(){
 	glPopMatrix();
 
 	glPopAttrib();
-
-
 }
-
-
-void drawLeftWall(){
-	if (live_draw_left_wall)
-	{
-
-		//glEnable(GL_TEXTURE_2D);
-		//glNormal3f(-1.0, 0.0, 0.0);
-		//glBindTexture(GL_TEXTURE_2D, wall_tex->name);
-		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		glBegin(GL_TRIANGLE_FAN);
-		glNormal3f(1.0,0.0,0.0);
-		/*glTexCoord2f(0.0,4.0);*/  glVertex3f(-10, 10, -10);
-		/*glTexCoord2f(4.0,4.0);*/  glVertex3f(-10, 10,  10);
-		/*glTexCoord2f(4.0,0.0);*/  glVertex3f(-10, 0,  10);
-		/*glTexCoord2f(0.0,0.0);*/  glVertex3f(-10, 0, -10);
-		glEnd();
-	}
-
-}
-
-void drawRightWall(){
-	//draw right wall
-	if(live_draw_right_wall)
-	{
-		//glNormal3f(1.0, 0.0, 0.0);
-		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-		glBegin(GL_TRIANGLE_FAN);
-		glNormal3f(-1.0,0.0,0.0);
-		/*glTexCoord2f(0.0,0.0);*/ glVertex3f(10, 0, -10);
-		/*glTexCoord2f(4.0,0.0);*/ glVertex3f(10, 0,  10);
-		/*glTexCoord2f(4.0,4.0);*/ glVertex3f(10, 10,  10);
-		/*glTexCoord2f(0.0,4.0);*/ glVertex3f(10, 10, -10);
-		glEnd();
-	}
-}
-
-void drawFrontWall(){
-	//draw front wall
-	if(live_draw_front_wall)
-	{
-		glNormal3f(0.0, 0.0, -1.0);
-		//		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-		glBegin(GL_TRIANGLE_FAN);
-		/*glTexCoord2f(0.0,4.0);*/ glVertex3f(-10, 10, 10);
-		/*glTexCoord2f(4.0,4.0);*/ glVertex3f(10, 10,  10);
-		/*glTexCoord2f(4.0,0.0);*/ glVertex3f(10, 0,  10);
-		/*glTexCoord2f(0.0,0.0);*/ glVertex3f(-10, 0, 10);
-		glEnd();
-	}
-}
-
-void drawBackWall(){
-	//draw back wall
-	if(live_draw_back_wall)
-	{
-		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-		glBegin(GL_TRIANGLE_FAN);
-		glNormal3f(0.0, 0.0, 1.0);
-		/*glTexCoord2f(0.0,0.0);*/ glVertex3f(-10, 0, -10);
-		/*glTexCoord2f(4.0,0.0);*/ glVertex3f(10, 0,  -10);
-		/*glTexCoord2f(4.0,4.0);*/ glVertex3f(10, 10,  -10);
-		/*glTexCoord2f(0.0,4.0);*/ glVertex3f(-10, 10, -10);
-		glEnd();
-	}
-}
-
-void drawWalls(){
-	//draw left wall
-
-	drawLeftWall();
-	drawRightWall();
-	drawFrontWall();
-	drawBackWall();
-
-}
-
 
 // draw the scene 
 void myGlutDisplay(	void ) 
@@ -698,7 +627,7 @@ void myGlutDisplay(	void )
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	//glTranslatef(xDirTransl,0,zDirTransl);
+
 	if(live_fish_drawing_mode == 0){
 		// phong shading
 		// draw some stuff
@@ -747,35 +676,42 @@ void myGlutDisplay(	void )
 
 	    glUniform1i(isFishVertex, 0);
 	}
+	if(live_fish_drawing_mode == 1){
+	    // wireframe
+	    glUseProgram(program);
+	    
+	    glUniform3f(eyePositionTest, eye[0],eye[1],eye[2]);	
+	    glUniform1f(phase, phaseAngle);
+	    glUniform1f(wireXTrans, xDirTransl);
+	    glUniform1f(wireZTrans, zDirTransl);
+
+
+	    if(live_swim == 1){
+	       	glUniform1i(swim, 1);
+	    }
+	    else{
+		glUniform1i(swim, 0);		
+	    }
+
+	    
+	    drawFish(live_fish_drawing_mode);	    
+	}
 	else if(live_fish_drawing_mode == 2){
 		//toon shading
-		glUseProgram(toonProgram);
-		glUniform3f(eyePosition, eye[0],eye[1],eye[2]);
-		// draw some stuff
-		//
-		//	glUniform1i(isFishVertex, 0);
+	    glUseProgram(toonProgram);	
+	    if(live_swim == 1){
+		glUniform1i(swimToon, 1);
+	    }
+	    else{
+		glUniform1i(swimToon, 0);
+	    }
+	    glUniform1f(phaseToon, phaseAngle);
+	    glUniform3f(toonCameraPosition, 
+		eye[0],eye[1],eye[2]);	
+	    glUniform1f(toonXTrans, xDirTransl);	
+	    glUniform1f(toonZTrans, zDirTransl);
 
-		//		glUniform1i(isFishVertex, 0);
-		if(live_swim == 1){
-			glUniform1i(swimToon, 1);
-		}
-		else{
-			glUniform1i(swimToon, 0);
-		}
-		glUniform1f(phaseToon, phaseAngle);
-		//			glUniform1f(phase, phaseAngle);
-
-		if(live_fish_drawing_mode == 0) glUniform1i(polygonMode, 0);
-		if(live_fish_drawing_mode == 1) glUniform1i(polygonMode, 1);
-		glUniform1i(isFishVertex, 1);
-
-		drawFish(live_fish_drawing_mode);
-
-		//glUniform1i(isFishVertex, 0);
-
-
-
-
+	    drawFish(live_fish_drawing_mode);
 	}
 	glPopMatrix();
 
@@ -1168,18 +1104,22 @@ void init( void)
 	testSwim = 
 	    glGetUniformLocation(testProgram, "testSwim");	
 
-
+	//toon shading program
 	toonVertexShader = makeShader(GL_VERTEX_SHADER, "toonVertexShader.glsl");
 	toonFragmentShader = makeShader(GL_FRAGMENT_SHADER, "toonFragmentShader.glsl");
 	toonProgram = makeProgram(toonVertexShader, toonFragmentShader);
-	toonTestProgram = 
-	    makeProgram(testVertexShader, toonFragmentShader);
+	toonProgram = 
+	    makeProgram(toonVertexShader, toonFragmentShader);
 	glUseProgram(toonProgram);
 	phaseToon = glGetUniformLocation(toonProgram, "phase");
-	swimToon = glGetUniformLocation(toonProgram, "swim");
+	swimToon = glGetUniformLocation(toonProgram, "swimT");
+	toonCameraPosition = 
+	    glGetUniformLocation(toonProgram, "cameraPosition");
+	toonXTrans = glGetUniformLocation(toonProgram, "xTransToon");
+	toonZTrans = glGetUniformLocation(toonProgram, "zTransToon");
 
 
-
+	//floor program
 	floorVertexShader = makeShader(GL_VERTEX_SHADER, "floorVertexShader.glsl");
 	floorFragmentShader = makeShader(GL_FRAGMENT_SHADER, "floorFragmentShader.glsl");
 	floorProgram = makeProgram(floorVertexShader, floorFragmentShader);
@@ -1204,100 +1144,13 @@ void init( void)
 
 	swim = glGetUniformLocation(program,"swim");
 	phase = glGetUniformLocation(program,"phase");
-	polygonMode = glGetUniformLocation(program,"polygonMode");
-	fishTexture = glGetUniformLocation(program,"fishTexture");
-	eyePosition = glGetUniformLocation(program,"eyePosition");
-	fishNormalMap = glGetUniformLocation(program,"fishNormalMap");
+	//polygonMode = glGetUniformLocation(program,"polygonMode");
+	//fishTexture = glGetUniformLocation(program,"fishTexture");
+	//eyePosition = glGetUniformLocation(program,"eyePosition");
+	//fishNormalMap = glGetUniformLocation(program,"fishNormalMap");
 
-	filled_list = glGenLists(1);
-	wireframe_list = glGenLists(1);
-
-	//filled fish display list
-	glNewList(filled_list, GL_COMPILE);
-	//glColor3f(1,1,1);
-	glPushAttrib(GL_LIGHTING_BIT);
-	glEnable(GL_COLOR_MATERIAL);
-	glColor4f(0.396, 0.74151, 0.69102, 0.8);
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	for(int j = 0 ; j < NUM_TRANS_SECTIONS ; j++){
-		glBegin(GL_QUAD_STRIP);
-		for(int i = 0 ; i < NUM_LAT_QUADS ; i++){
-			GLfloat x0 = cos(((GLfloat)2*i*PI)/((GLfloat)NUM_LAT_QUADS));
-			GLfloat y0 = sin(((GLfloat)2*i*PI)/((GLfloat)NUM_LAT_QUADS));
-			GLfloat z0 = (j+1)*(10/((GLfloat) NUM_TRANS_SECTIONS));
-
-			GLfloat x1 = x0;
-			GLfloat y1 = y0;
-			GLfloat z1 = j*(10/((GLfloat) NUM_TRANS_SECTIONS));
-
-			glVertexAttrib3f(tangent,-y0,x0,0);
-
-			glNormal3f(x0,y0,0);
-			glTexCoord2f(((GLfloat) i)/NUM_LAT_QUADS,z0/10.0);
-			glVertex3f(x0,y0,z0);
-
-			glNormal3f(x1,y1,0);
-			glTexCoord2f(((GLfloat) i)/NUM_LAT_QUADS,z1/10.0);
-			glVertexAttrib3f(tangent,-y1,x1,0);
-			glVertex3f(x1,y1,z1);
-
-		}
-
-		glNormal3f(1,0,0);
-		glVertexAttrib3f(tangent,0,1,0);
-		glTexCoord2f(0.0,(j+1)*(1.0/((GLfloat) NUM_TRANS_SECTIONS)));
-		glVertex3f(1,0,(j+1)*(10/((GLfloat) NUM_TRANS_SECTIONS)));
-
-		glNormal3f(1,0,0);
-		glVertexAttrib3f(tangent,0,1,0);
-		glTexCoord2f(0.0,(j)*(1.0/((GLfloat) NUM_TRANS_SECTIONS)));
-		glVertex3f(1,0,j*(10/((GLfloat) NUM_TRANS_SECTIONS)));
-		glEnd();
-	}
-	glPopAttrib();
-	glDisable(GL_COLOR_MATERIAL);
-	glEndList();
-
-	//wireframe fish display list
-	glNewList(wireframe_list, GL_COMPILE);
-	glPushAttrib(GL_LIGHTING_BIT);
-	glEnable(GL_COLOR_MATERIAL);
-	glColor4f(1.0, 1.0, 1.0, 1.0);
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	for(int j = 0 ; j < NUM_TRANS_SECTIONS ; j++){
-		glBegin(GL_QUAD_STRIP);
-		for(int i = 0 ; i < NUM_LAT_QUADS ; i++){
-			GLfloat x0 = cos(((GLfloat)2*i*PI)/((GLfloat)NUM_LAT_QUADS));
-			GLfloat y0 = sin(((GLfloat)2*i*PI)/((GLfloat)NUM_LAT_QUADS));
-			GLfloat z0 = (j+1)*(10/((GLfloat) NUM_TRANS_SECTIONS));
-
-			GLfloat x1 = x0;
-			GLfloat y1 = y0;
-			GLfloat z1 = j*(10/((GLfloat) NUM_TRANS_SECTIONS));
-
-			glNormal3f(x0,y0,0);
-			glVertex3f(x0,y0,z0);
-			glNormal3f(x1,y1,0);
-			glVertex3f(x1,y1,z1);
-
-		}
-
-		glVertex3f(1,0,(j+1)*(10/((GLfloat) NUM_TRANS_SECTIONS)));
-		glVertex3f(1,0,j*(10/((GLfloat) NUM_TRANS_SECTIONS)));
-		glEnd();
-	}
-	glPopAttrib();
-	glDisable(GL_COLOR_MATERIAL);
-	glEndList();
-
-
-
-
-
+	wireXTrans = glGetUniformLocation(program,"xTrans");
+	wireZTrans = glGetUniformLocation(program,"zTrans");
 } 
 
 void processSpecialKeys(int key, int x, int y) {
