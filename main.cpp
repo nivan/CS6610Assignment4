@@ -512,15 +512,15 @@ void drawFish(int mode){
 	glPushAttrib(GL_POLYGON_BIT);
 
 
-	//	GLfloat mat_specular[] = {0.297254, 0.30829, 0.306678, 0.8};
-	//	GLfloat mat_diff[] = {0.396, 0.74151, 0.69102, 0.8};
-	//	GLfloat mat_amb[] = {0.1, 0.18725, 0.1745, 0.8};
-	//	GLfloat mat_shininess[] = {12.8};
+		GLfloat mat_specular[] = {0.297254, 0.30829, 0.306678, 0.8};
+		GLfloat mat_diff[] = {0.396, 0.74151, 0.69102, 0.8};
+		GLfloat mat_amb[] = {0.1, 0.18725, 0.1745, 0.8};
+		GLfloat mat_shininess[] = {12.8};
 	//
-	//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_amb);
-	//	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diff);
-	//	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-	//	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_amb);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diff);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+		glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
 
 	//glEnable(GL_COLOR_MATERIAL);
 	//glColor4f(0.396, 0.74151, 0.69102, 0.8);
@@ -535,7 +535,7 @@ void drawFish(int mode){
 
 		//	glBindTexture(GL_TEXTURE_2D, fish_tex->name);
 	//		glEnable(GL_TEXTURE_2D);
-	    glColor4f(1.0,1.0,1.0,1.0);
+	    //glColor4f(1.0,1.0,1.0,1.0);
 			gluCylinder(testCylinder, 1,1,10,50,50);
 //			glDisable(GL_TEXTURE_2D);
 //			glPopMatrix();
